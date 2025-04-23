@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using VNWGame.Game;
+using VNWGame;
 
 public class GameManager : MonoBehaviour
 {
     public TMP_FontAsset mainFont;
     public List<TMP_FontAsset> fallbackList;
     public Material material;
+    public TextMeshProUGUI test;
     void Start()
     {
         FontTexArraySystem.Instance.Init(mainFont, fallbackList);
@@ -27,13 +29,15 @@ public class GameManager : MonoBehaviour
             
             foreach (string row in rows)
             {
-                HUDFontSystem.Instance.ShowFont(id++, 1, row);
+                HUDFontSystem.Instance.ShowFont(id++, 2, ArabicFixerTool.FixLine(row));
             }
         }
         else
         {
             Debug.LogError("CSV 文件未找到！");
         }
+
+        test.text = ArabicFixerTool.FixLine("شلبي");
     }
 
     // Update is called once per frame

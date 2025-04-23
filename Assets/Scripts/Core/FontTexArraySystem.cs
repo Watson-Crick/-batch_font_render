@@ -14,7 +14,7 @@ namespace VNWGame.Game
         
         public int count;
         public int arrayIndex;
-        public Vector2 startUV;
+        public Vector4 uv;
     }
 
     public class FontTexArraySystem : MgrSingleton<FontTexArraySystem>
@@ -44,8 +44,8 @@ namespace VNWGame.Game
             fontAtlasArray = new Texture2DArray(tmp_Font.atlasWidth, tmp_Font.atlasHeight, ArrayMaxCount, tmp_Font.atlasTextures[0].format, false);
             // 初始化字体纹理数组为全黑
             Color32[] cols = new Color32[tmp_Font.atlasWidth * tmp_Font.atlasHeight];
-            rowCount = tmp_Font.atlasWidth / (SamplingPointSize + 2 * Padding);
-            columnCount = tmp_Font.atlasHeight / (SamplingPointSize + 2 * Padding);
+            rowCount = Mathf.FloorToInt((float)tmp_Font.atlasWidth / (SamplingPointSize + 2 * Padding));
+            columnCount = Mathf.FloorToInt((float)tmp_Font.atlasHeight / (SamplingPointSize + 2 * Padding));
             texUnitCount = rowCount * columnCount;
             for (int i = 0; i < ArrayMaxCount; ++i)
             {
@@ -76,7 +76,6 @@ namespace VNWGame.Game
         {
             TMP_Character t_ch = fontTexArrayInfoDic[word].character;
             int arrayIndex = fontTexArrayInfoDic[word].arrayIndex;
-            Debug.LogError((char)word + "   " + t_ch.glyph.glyphRect.x + "   " + t_ch.glyph.glyphRect.y + "   " + t_ch.glyph.glyphRect.width + "   " + t_ch.glyph.glyphRect.height);
             int x = (t_ch.glyph.glyphRect.x - Padding); // 左上角 X 坐标
             int y = (t_ch.glyph.glyphRect.y - Padding); // 左上角 Y 坐标
             int width = (t_ch.glyph.glyphRect.width + 2 * Padding); // 宽度
@@ -112,10 +111,15 @@ namespace VNWGame.Game
             {
                 uint[] temp = new uint[1];
                 temp[0] = word;
-                bool res = tmp_Font.TryAddCharacters(temp, true);
+                bool res = tmp_Font.TryAddCharacters(temp, false);
                 res = res || tmp_Font.HasCharacter((int)word);
                 if (res)
                 {
+                    TMP_Character t_ch = tmp_Font.characterLookupTable[word];
+                    if (t_ch.glyph.glyphRect.width > SamplingPointSize || t_ch.glyph.glyphRect.height > SamplingPointSize)
+                    {
+                        Debug.LogErrorFormat("该文字{0}的大小超过SamplingPointSize", (char)word);
+                    }
                     fontTexArrayInfoDic.Add(word, new FontInfo()
                     {
                         haveCharacter = true,
@@ -127,10 +131,15 @@ namespace VNWGame.Game
                 {
                     for (int i = 0; i < fontFallbackList.Count; i++)
                     {
-                        res = fontFallbackList[i].TryAddCharacters(temp, true);
+                        res = fontFallbackList[i].TryAddCharacters(temp, false);
                         res = res || fontFallbackList[i].HasCharacter((int)word);
                         if (res)
                         {
+                            TMP_Character t_ch = fontFallbackList[i].characterLookupTable[word];
+                            if (t_ch.glyph.glyphRect.width > SamplingPointSize || t_ch.glyph.glyphRect.height > SamplingPointSize)
+                            {
+                                Debug.LogErrorFormat("该文字{0}的大小超过SamplingPointSize", (char)word);
+                            }
                             fontTexArrayInfoDic.Add(word, new FontInfo()
                             {
                                 haveCharacter = true,
@@ -225,15 +234,6 @@ namespace VNWGame.Game
                 EventManager.Invoke(GameEvent.UpdateFontTexArray, fontAtlasArray);
                 needUpdateFont = false;
             }
-        }
-
-        public void Clear()
-        {
-            fontTexArrayInfoDic?.Clear();
-            unUseFontArrayIndex?.Clear();
-            canRemoveFont?.Clear();
-
-            tmp_Font = null;
         }
     }
 }

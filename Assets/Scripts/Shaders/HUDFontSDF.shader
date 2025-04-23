@@ -144,6 +144,7 @@ Shader "Game/HUDFontSDF" {
                 float2 rect = _AtlasData.w / float2(_AtlasData.x, _AtlasData.y);
                 uint row = _AtlasData.x / _AtlasData.w;
                 float2 uv = float2(arrayIndex % _AtlasData.z % row * rect.x, floor(arrayIndex % _AtlasData.z / row) * rect.y);
+                // 这里看看使用另一种方式,即找到中心然后用Sampling pointsize减去glyphRect除2来处理
                 uv += temp * fontSize / _AtlasData.xy;
                 o.vertex = vPosition;
                 o.uv = float3(uv.x, uv.y, atlasIndex);
@@ -156,7 +157,7 @@ Shader "Game/HUDFontSDF" {
             }
 
             float4 frag(v2f o) : SV_Target {
-                // clip(o.param2.x - 0.5);
+                clip(o.param2.x - 0.5);
                 
                 float d = UNITY_SAMPLE_TEX2DARRAY(_MainTex, o.uv.xyz).a * o.param.x;
                 float4 c = lerp(o.outlineColor, o.color, saturate(d - o.param.z));

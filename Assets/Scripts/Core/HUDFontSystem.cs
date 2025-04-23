@@ -12,14 +12,12 @@ namespace VNWGame.Game
 {
     public class HUDFontData
     {
-        public char word;
         public Vector3 offset;
-        public Vector2 fontSize;
-        public int colorType;
         public int arrayIndex;
-        public int alive;
+        public int colorType;
         public float fontScale;
-        public long shipID;
+        public Vector2 fontSize;
+        public int alive;
         public static int PixelCount = 3;
     }
     public class HUDFontSystem : MgrSingleton<HUDFontSystem>
@@ -102,8 +100,8 @@ namespace VNWGame.Game
                     rawData[index++] = data.Value[i].fontSize.x;
                     rawData[index++] = data.Value[i].fontSize.y;
                     
-                    rawData[index++] = pos % 5 * 2;
-                    rawData[index++] = pos / 5;
+                    rawData[index++] = pos % 3 * 2;
+                    rawData[index++] = (pos / 2) / 2.0f;
                     rawData[index++] = 0;
                     rawData[index++] = data.Value[i].alive;
                 }
@@ -175,8 +173,6 @@ namespace VNWGame.Game
                 ++renderCount;
                 
                 HandleFontData(glm, info, strList[strList.Count - 1], fontscale, 0, ref strSize);
-                strList[strList.Count - 1].word = (char)word;
-                strList[strList.Count - 1].shipID = id;
                 strList[strList.Count - 1].alive = 1;
             }
             
@@ -185,8 +181,7 @@ namespace VNWGame.Game
 
         void HandleFontData(GlyphMetrics glm, FontInfo info, HUDFontData data, float fontScale, int colorType, ref Vector2 strSize)
         {
-            // fontSize负责uv和网格大小,这两是一致的
-            data.fontSize.x = glm.width == 0 ? 24.70313f : glm.width + 2 * FontTexArraySystem.Instance.GetPadding();
+            data.fontSize.x = glm.width + 2 * FontTexArraySystem.Instance.GetPadding();
             data.fontSize.y = glm.height + 2 * FontTexArraySystem.Instance.GetPadding();
             // 通过colorType直接确定颜色, arrayIndex是文字所在纹理数组的索引, fontScale是字号在shader中具体计算文字的缩放等信息,offset是文字起点
             data.colorType = colorType;
